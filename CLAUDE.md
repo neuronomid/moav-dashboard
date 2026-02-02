@@ -72,9 +72,9 @@ MoaV (https://github.com/shayanb/MoaV) is a Docker-based multi-protocol censorsh
 - Credentials: `state/users/$USERNAME/wireguard.env`
 
 **dnstt (DNS Tunnel):**
-- Script: `scripts/dnstt-user-add.sh`
-- Bundle output: dnstt.txt (DNS tunnel connection config)
-- Agent reads: `outputs/bundles/$USERNAME/dnstt.txt` when creating users
+- Script: Part of `scripts/user-add.sh` (not a separate script)
+- Bundle output: dnstt-instructions.txt (DNS tunnel connection instructions)
+- Agent reads: `outputs/bundles/$USERNAME/dnstt-instructions.txt` when creating users
 - Config stored in `vpn_users.config_raw` for dashboard display
 
 ### User Revocation Details
@@ -232,7 +232,7 @@ When the agent executes a `user:add` command, it reads the following config file
 - `hysteria2.txt` → config_raw.hysteria2
 - `wireguard.conf` → config_raw.wireguard
 - `wireguard-wstunnel.conf` → config_raw.wireguard_wstunnel
-- `dnstt.txt` → config_raw.dnstt
+- `dnstt-instructions.txt` → config_raw.dnstt
 
 **Note**: Files are read with error tolerance - if a protocol is disabled or file missing, the agent logs a warning and continues. This allows partial protocol deployments.
 

@@ -59,7 +59,7 @@ export const userAdd: CommandHandler = async (payload) => {
             { key: 'hysteria2', file: 'hysteria2.txt' },
             { key: 'wireguard', file: 'wireguard.conf' },
             { key: 'wireguard_wstunnel', file: 'wireguard-wstunnel.conf' },
-            { key: 'dnstt', file: 'dnstt.txt' },
+            { key: 'dnstt', file: 'dnstt-instructions.txt' },
         ];
 
         for (const { key, file } of files) {
