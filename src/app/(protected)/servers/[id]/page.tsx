@@ -13,6 +13,7 @@ import { isServerOnline, timeAgo } from "@/lib/utils";
 import type { ServerStatusJson, ServiceState } from "@/lib/types/database";
 import { Activity, Cpu, HardDrive, CheckCircle2, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { HealthDialog } from "@/components/health/health-dialog";
 
 function ServiceStateBadge({ state }: { state: ServiceState | undefined }) {
   if (!state || state === "unknown") {
@@ -66,17 +67,31 @@ export default function ServerOverviewPage() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Health</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold capitalize">
-              {status.health ?? "N/A"}
-            </div>
-          </CardContent>
-        </Card>
+        <HealthDialog
+          serverId={server.id}
+          status={status}
+          trigger={
+            <Card className="cursor-pointer hover:bg-accent/50 transition-colors">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Health</CardTitle>
+                <Activity className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className={cn(
+                  "text-2xl font-bold capitalize",
+                  status.health === "ok" && "text-green-600 dark:text-green-400",
+                  status.health === "warn" && "text-yellow-600 dark:text-yellow-400",
+                  status.health === "critical" && "text-red-600 dark:text-red-400"
+                )}>
+                  {status.health ?? "N/A"}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Click for details
+                </p>
+              </CardContent>
+            </Card>
+          }
+        />
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

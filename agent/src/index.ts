@@ -4,6 +4,7 @@ import { startHeartbeat, stopHeartbeat } from "./heartbeat.js";
 import { startCommandRunner, stopCommandRunner } from "./command-runner.js";
 import { startExpirationMonitor, stopExpirationMonitor } from "./monitors/expiration-monitor.js";
 import { startUsageMonitor, stopUsageMonitor } from "./monitors/usage-monitor.js";
+import { startHealthMonitor, stopHealthMonitor } from "./monitors/health-monitor.js";
 
 const AGENT_TOKEN = process.env.AGENT_TOKEN;
 
@@ -50,6 +51,9 @@ async function main() {
   console.log("- Command runner (5s poll)...");
   startCommandRunner(serverId);
 
+  console.log("- Health monitor (60s checks + auto-remediation)...");
+  startHealthMonitor(serverId);
+
   console.log("- Expiration monitor (hourly check)...");
   startExpirationMonitor(serverId);
 
@@ -68,6 +72,7 @@ function shutdown() {
   console.log("================================");
   stopHeartbeat();
   stopCommandRunner();
+  stopHealthMonitor();
   stopExpirationMonitor();
   stopUsageMonitor();
   console.log("✓ All services stopped");

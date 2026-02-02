@@ -61,42 +61,41 @@ else
 fi
 echo ""
 
-echo -e "${YELLOW}Step 5/6: Checking for running agent...${NC}"
+echo -e "${YELLOW}Step 5/6: Restarting agent...${NC}"
 
-# Try different methods to find and stop the agent
-if command -v pm2 &> /dev/null; then
-    echo "  Using PM2..."
-    pm2 restart moav-agent 2>/dev/null || pm2 start npm --name moav-agent -- start
-    echo -e "${GREEN}✓ Agent restarted with PM2${NC}"
-elif systemctl is-active --quiet moav-agent 2>/dev/null; then
-    echo "  Using systemd..."
+# Check if systemd service exists
+if systemctl list-unit-files | grep -q "moav-agent.service"; then
+    echo "  Using systemd service..."
     sudo systemctl restart moav-agent
     echo -e "${GREEN}✓ Agent restarted with systemd${NC}"
+elif command -v pm2 &> /dev/null && pm2 list | grep -q moav-agent; then
+    echo "  Using PM2..."
+    pm2 restart moav-agent
+    echo -e "${GREEN}✓ Agent restarted with PM2${NC}"
 else
-    echo -e "${YELLOW}  Starting agent manually...${NC}"
-    # Kill any existing node process running the agent
-    pkill -f "node.*agent" 2>/dev/null || true
-    sleep 2
-
-    # Start the agent
-    npm start &
-    echo -e "${GREEN}✓ Agent started${NC}"
+    echo -e "${YELLOW}  No service manager detected${NC}"
+    echo -e "${YELLOW}  Please set up systemd service (see INSTALL.md)${NC}"
+    echo ""
+    echo "  Or start manually with:"
+    echo "    npm start"
+    exit 0
 fi
 echo ""
 
 echo -e "${YELLOW}Step 6/6: Verifying agent is running...${NC}"
 sleep 3
 
-if command -v pm2 &> /dev/null; then
-    pm2 list | grep moav-agent && echo -e "${GREEN}✓ Agent is running${NC}" || echo -e "${RED}❌ Agent may not be running${NC}"
+if systemctl is-active --quiet moav-agent 2>/dev/null; then
+    echo -e "${GREEN}✓ Agent is running${NC}"
     echo ""
-    echo "To view logs: pm2 logs moav-agent"
-elif pgrep -f "node.*agent" > /dev/null; then
-    echo -e "${GREEN}✓ Agent process is running${NC}"
+    echo "View logs: ${BLUE}sudo journalctl -u moav-agent -f${NC}"
+    echo "Check status: ${BLUE}sudo systemctl status moav-agent${NC}"
+elif command -v pm2 &> /dev/null && pm2 list | grep -q moav-agent; then
+    echo -e "${GREEN}✓ Agent is running${NC}"
     echo ""
-    echo "To view logs: journalctl -u moav-agent -f"
+    echo "View logs: ${BLUE}pm2 logs moav-agent${NC}"
 else
-    echo -e "${YELLOW}⚠ Could not verify if agent is running${NC}"
+    echo -e "${RED}❌ Could not verify if agent is running${NC}"
 fi
 echo ""
 
