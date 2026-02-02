@@ -14,8 +14,8 @@ async function register(): Promise<string> {
   // Look up server by agent_token
   const { data: server, error } = await supabase
     .from("servers")
-    .select("id, name, is_registered")
-    .eq("agent_token", AGENT_TOKEN)
+    .select("id, name")
+    .eq("agent_token", AGENT_TOKEN!)
     .single();
 
   if (error || !server) {
@@ -23,21 +23,15 @@ async function register(): Promise<string> {
     process.exit(1);
   }
 
-  if (!server.is_registered) {
-    const hostname = (await import("os")).hostname();
-    await supabase
-      .from("servers")
-      .update({
-        is_registered: true,
-        agent_id: hostname,
-        last_seen_at: new Date().toISOString(),
-      })
-      .eq("id", server.id);
-    console.log(`Registered as "${server.name}" (${server.id})`);
-  } else {
-    console.log(`Already registered as "${server.name}" (${server.id})`);
-  }
+  // Update last_seen_at to mark this agent as connected
+  await supabase
+    .from("servers")
+    .update({
+      last_seen_at: new Date().toISOString(),
+    })
+    .eq("id", server.id);
 
+  console.log(`Registered as "${server.name}" (${server.id})`);
   return server.id;
 }
 

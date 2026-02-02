@@ -1,18 +1,16 @@
 /** Hand-written types matching the Supabase schema.
- *  Replace with `supabase gen types typescript` output later. */
+ *  These should match the tables created in the database. */
 
 export type ServerStatus = "online" | "offline" | "unknown";
 
 export interface Server {
   id: string;
   name: string;
-  host: string;
+  ip: string;
   agent_token: string;
-  agent_id: string | null;
-  is_registered: boolean;
   last_seen_at: string | null;
   moav_version: string | null;
-  status_json: ServerStatusJson;
+  status_json: ServerStatusJson | null;
   created_at: string;
   updated_at: string;
 }
@@ -35,49 +33,70 @@ export interface VpnUser {
   username: string;
   status: VpnUserStatus;
   note: string | null;
-  access_policy: Record<string, boolean>;
+  access_policy: AccessPolicy | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface AccessPolicy {
+  wireguard: boolean;
+  hysteria2: boolean;
+  trojan: boolean;
+  vless_reality: boolean;
+  dnstt: boolean;
+  conduit: boolean;
 }
 
 export interface VpnUserAccessEffective {
   id: string;
   server_id: string;
-  vpn_user_id: string;
   username: string;
-  enabled_services_json: string[];
+  enabled_services_json: AccessPolicy | null;
   updated_at: string;
 }
 
 export type CommandStatus =
-  | "queued"
+  | "pending"
   | "running"
-  | "succeeded"
-  | "failed"
-  | "cancelled";
+  | "completed"
+  | "failed";
+
+export type CommandType =
+  | "service:start"
+  | "service:stop"
+  | "service:restart"
+  | "server:status"
+  | "server:logs"
+  | "server:export"
+  | "server:test"
+  | "user:add"
+  | "user:revoke"
+  | "user:update-access";
 
 export interface Command {
   id: string;
   server_id: string;
-  type: string;
-  payload_json: Record<string, unknown>;
+  type: CommandType;
+  payload: Record<string, unknown> | null;
   status: CommandStatus;
-  result_json: Record<string, unknown> | null;
+  result: Record<string, unknown> | null;
+  error: string | null;
   created_at: string;
   started_at: string | null;
   completed_at: string | null;
 }
 
 export interface LogEvent {
-  id: number;
+  id: string;
   server_id: string;
   service: string;
   ts: string;
   line: string;
+  level: "debug" | "info" | "warn" | "error" | null;
 }
 
 /** Convenience type for inserting a new server */
-export type ServerInsert = Pick<Server, "name" | "host" | "agent_token">;
+export type ServerInsert = Pick<Server, "name" | "ip" | "agent_token">;
 
 /** Convenience type for inserting a new VPN user */
 export type VpnUserInsert = Pick<VpnUser, "server_id" | "username"> &
@@ -86,5 +105,5 @@ export type VpnUserInsert = Pick<VpnUser, "server_id" | "username"> &
 /** Convenience type for inserting a new command */
 export type CommandInsert = Pick<
   Command,
-  "server_id" | "type" | "payload_json"
+  "server_id" | "type" | "payload"
 >;

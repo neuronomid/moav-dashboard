@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { agent_token, agent_id } = body;
+    const { agent_token } = body;
 
     if (!agent_token) {
       return NextResponse.json(
@@ -18,7 +18,7 @@ export async function POST(request: Request) {
     // Look up server by token
     const { data: server, error: findError } = await supabase
       .from("servers")
-      .select("id, name, is_registered")
+      .select("id, name")
       .eq("agent_token", agent_token)
       .single();
 
@@ -29,21 +29,10 @@ export async function POST(request: Request) {
       );
     }
 
-    if (server.is_registered) {
-      // Already registered — return the server info anyway (idempotent)
-      return NextResponse.json({
-        server_id: server.id,
-        server_name: server.name,
-        already_registered: true,
-      });
-    }
-
-    // Mark as registered
+    // Update last_seen_at to mark agent as connected
     const { error: updateError } = await supabase
       .from("servers")
       .update({
-        is_registered: true,
-        agent_id: agent_id || null,
         last_seen_at: new Date().toISOString(),
       })
       .eq("id", server.id);
@@ -58,7 +47,6 @@ export async function POST(request: Request) {
     return NextResponse.json({
       server_id: server.id,
       server_name: server.name,
-      already_registered: false,
     });
   } catch {
     return NextResponse.json(

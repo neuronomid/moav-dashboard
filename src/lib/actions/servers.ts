@@ -6,10 +6,10 @@ import { createClient } from "@/lib/supabase/server";
 
 export async function addServer(formData: FormData) {
   const name = formData.get("name") as string;
-  const host = formData.get("host") as string;
+  const ip = formData.get("host") as string; // form field still called "host" for UX
 
-  if (!name || !host) {
-    return { error: "Name and host are required" };
+  if (!name || !ip) {
+    return { error: "Name and IP/host are required" };
   }
 
   const agentToken = randomBytes(32).toString("hex");
@@ -17,7 +17,7 @@ export async function addServer(formData: FormData) {
 
   const { data, error } = await supabase
     .from("servers")
-    .insert({ name, host, agent_token: agentToken })
+    .insert({ name, ip, agent_token: agentToken })
     .select()
     .single();
 
@@ -27,6 +27,36 @@ export async function addServer(formData: FormData) {
 
   revalidatePath("/dashboard");
   return { data };
+}
+
+export async function updateServer(
+  serverId: string,
+  data: { name?: string; ip?: string }
+) {
+  const supabase = await createClient();
+
+  const updateData: Record<string, string> = {};
+  if (data.name) updateData.name = data.name;
+  if (data.ip) updateData.ip = data.ip;
+
+  if (Object.keys(updateData).length === 0) {
+    return { error: "No data to update" };
+  }
+
+  const { data: server, error } = await supabase
+    .from("servers")
+    .update(updateData)
+    .eq("id", serverId)
+    .select()
+    .single();
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath(`/servers/${serverId}`);
+  revalidatePath("/dashboard");
+  return { data: server };
 }
 
 export async function deleteServer(serverId: string) {

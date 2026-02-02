@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { COMMAND_TYPE_SET, type CommandType } from "@/lib/constants";
+import type { Json } from "@/types/supabase";
 
 export async function createCommand(
   serverId: string,
@@ -20,7 +21,7 @@ export async function createCommand(
     .insert({
       server_id: serverId,
       type,
-      payload_json: payload,
+      payload: payload as Json,
     })
     .select()
     .single();

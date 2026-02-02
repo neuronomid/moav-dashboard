@@ -1,10 +1,22 @@
+/**
+ * MoaV Services - These match the actual Docker services in MoaV
+ * Get the list from: docker compose --profile all config --services
+ */
 export const MOAV_SERVICES = [
+  // Core VPN services
+  { id: "sing-box", label: "sing-box (Reality/Trojan/Hysteria2)", profile: "proxy" },
   { id: "wireguard", label: "WireGuard", profile: "wireguard" },
-  { id: "hysteria2", label: "Hysteria2", profile: "proxy" },
-  { id: "trojan", label: "Trojan", profile: "proxy" },
-  { id: "vless-reality", label: "VLESS / Reality", profile: "proxy" },
-  { id: "dnstt", label: "dnstt", profile: "dnstt" },
-  { id: "conduit-snowflake", label: "Conduit / Snowflake", profile: "conduit" },
+  { id: "wstunnel", label: "wstunnel", profile: "wireguard" },
+  { id: "dnstt", label: "dnstt (DNS Tunnel)", profile: "dnstt" },
+
+  // Donation/relay services
+  { id: "conduit", label: "Psiphon Conduit", profile: "conduit" },
+  { id: "snowflake", label: "Tor Snowflake", profile: "snowflake" },
+
+  // Infrastructure
+  { id: "decoy", label: "Decoy Website", profile: "proxy" },
+  { id: "admin", label: "Admin Panel", profile: "admin" },
+  { id: "certbot", label: "Certbot (TLS)", profile: "proxy" },
 ] as const;
 
 export type MoavServiceId = (typeof MOAV_SERVICES)[number]["id"];
@@ -12,13 +24,13 @@ export type MoavServiceId = (typeof MOAV_SERVICES)[number]["id"];
 export const MOAV_SERVICE_IDS = MOAV_SERVICES.map((s) => s.id);
 
 /** Default access policy — all services enabled */
-export const DEFAULT_ACCESS_POLICY: Record<MoavServiceId, boolean> = {
+export const DEFAULT_ACCESS_POLICY: Record<string, boolean> = {
+  "sing-box": true,
   wireguard: true,
-  hysteria2: true,
-  trojan: true,
-  "vless-reality": true,
+  wstunnel: true,
   dnstt: true,
-  "conduit-snowflake": true,
+  conduit: true,
+  snowflake: true,
 };
 
 /**

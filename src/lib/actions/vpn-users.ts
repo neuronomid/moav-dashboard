@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import type { Json } from "@/types/supabase";
 
 export async function addVpnUser(
   serverId: string,
@@ -29,7 +30,7 @@ export async function addVpnUser(
   const { error: cmdError } = await supabase.from("commands").insert({
     server_id: serverId,
     type: "user:add",
-    payload_json: { username, vpn_user_id: user.id },
+    payload: { username, vpn_user_id: user.id } as Json,
   });
 
   if (cmdError) {
@@ -68,7 +69,7 @@ export async function revokeVpnUser(serverId: string, vpnUserId: string) {
   const { error: cmdError } = await supabase.from("commands").insert({
     server_id: serverId,
     type: "user:revoke",
-    payload_json: { username: user.username, vpn_user_id: vpnUserId },
+    payload: { username: user.username, vpn_user_id: vpnUserId } as Json,
   });
 
   if (cmdError) {

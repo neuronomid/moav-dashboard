@@ -85,6 +85,10 @@ npm run dev
 - The project is configured to use Supabase. Ensure `.env.local` is set up with `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
 - Agent requires `SUPABASE_SERVICE_ROLE_KEY` in `agent/.env` to bypass RLS.
 
+### Development Credentials
+- **Email**: `admin@gmail.com`
+- **Password**: `test1234`
+
 ## 6. Milestone 1 Status: Stubbed vs. Real
 
 **Currently Implemented & Real:**

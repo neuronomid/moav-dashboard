@@ -34,7 +34,7 @@ export function ServerCard({ server }: ServerCardProps) {
             <div>
               <CardTitle className="text-base">{server.name}</CardTitle>
               <CardDescription className="font-mono text-xs">
-                {server.host}
+                {server.ip}
               </CardDescription>
             </div>
           </div>
@@ -44,7 +44,7 @@ export function ServerCard({ server }: ServerCardProps) {
           <div className="flex items-center justify-between">
             <ServerStatusBadge lastSeenAt={server.last_seen_at} />
             <span className="text-xs text-muted-foreground">
-              {serviceCountSummary(server.status_json)}
+              {serviceCountSummary(server.status_json ?? {})}
             </span>
           </div>
         </CardContent>

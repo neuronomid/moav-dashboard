@@ -1,6 +1,6 @@
 import { supabase } from "./supabase.js";
 import { commandRegistry } from "./commands/index.js";
-import type { Command } from "./types.js";
+import type { Command, Json } from "./types.js";
 
 let interval: ReturnType<typeof setInterval> | null = null;
 
@@ -10,7 +10,7 @@ async function pollAndExecute(serverId: string) {
     .from("commands")
     .select("*")
     .eq("server_id", serverId)
-    .eq("status", "queued")
+    .eq("status", "pending")
     .order("created_at", { ascending: true })
     .limit(5);
 
@@ -42,7 +42,8 @@ async function pollAndExecute(serverId: string) {
         .from("commands")
         .update({
           status: "failed",
-          result_json: { error: `Unknown command type: ${cmd.type}` },
+          result: { error: `Unknown command type: ${cmd.type}` },
+          error: `Unknown command type: ${cmd.type}`,
           completed_at: new Date().toISOString(),
         })
         .eq("id", cmd.id);
@@ -50,15 +51,16 @@ async function pollAndExecute(serverId: string) {
     }
 
     try {
-      const result = await handler(cmd.payload_json);
+      const result = await handler((cmd.payload ?? {}) as Record<string, unknown>);
 
       await supabase
         .from("commands")
         .update({
-          status: result.success ? "succeeded" : "failed",
-          result_json: result.success
-            ? { data: result.data }
-            : { error: result.error },
+          status: result.success ? "completed" : "failed",
+          result: (result.success
+            ? { data: result.data ?? null }
+            : { error: result.error ?? null }) as Json,
+          error: result.success ? null : (result.error ?? null),
           completed_at: new Date().toISOString(),
         })
         .eq("id", cmd.id);
@@ -75,7 +77,8 @@ async function pollAndExecute(serverId: string) {
         .from("commands")
         .update({
           status: "failed",
-          result_json: { error: message },
+          result: { error: message },
+          error: message,
           completed_at: new Date().toISOString(),
         })
         .eq("id", cmd.id);
