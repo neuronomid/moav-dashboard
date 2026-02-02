@@ -43,24 +43,36 @@ export const userAdd = async (payload) => {
     // Read the generated config bundle
     const bundlePath = `/opt/moav/outputs/bundles/${username}`;
     const configRaw = {};
+    console.log(`[user:add] Looking for config files in: ${bundlePath}`);
     try {
+        // List directory contents for debugging
+        try {
+            const dirContents = await fs.readdir(bundlePath);
+            console.log(`[user:add] Bundle directory contents:`, dirContents);
+        }
+        catch (e) {
+            console.error(`[user:add] Could not list bundle directory:`, e);
+        }
         // Read each protocol config file
+        // Note: MoaV generates hysteria2.yaml (not .txt)
         const files = [
             { key: 'reality', file: 'reality.txt' },
             { key: 'trojan', file: 'trojan.txt' },
-            { key: 'hysteria2', file: 'hysteria2.txt' },
+            { key: 'hysteria2', file: 'hysteria2.yaml' },
             { key: 'wireguard', file: 'wireguard.conf' },
             { key: 'wireguard_wstunnel', file: 'wireguard-wstunnel.conf' },
-            { key: 'dnstt', file: 'dnstt.txt' },
+            { key: 'dnstt', file: 'dnstt-instructions.txt' },
         ];
         for (const { key, file } of files) {
             try {
-                const content = await fs.readFile(path.join(bundlePath, file), 'utf-8');
+                const filePath = path.join(bundlePath, file);
+                const content = await fs.readFile(filePath, 'utf-8');
                 configRaw[key] = content.trim();
+                console.log(`[user:add] Successfully read ${file} (${content.length} bytes)`);
             }
             catch (err) {
                 // File might not exist if protocol is disabled
-                console.warn(`Could not read ${file} for ${username}:`, err);
+                console.warn(`[user:add] Could not read ${file} for ${username}:`, err.message);
             }
         }
         // Update database with config and mark as active

@@ -1,144 +1,146 @@
 import { Client } from "ssh2";
 
 export interface SSHConfig {
-    host: string;
-    port?: number;
-    username: string;
-    password: string;
+  host: string;
+  port?: number;
+  username: string;
+  password: string;
 }
 
 export interface SSHResult {
-    success: boolean;
-    output: string;
-    exitCode: number;
+  success: boolean;
+  output: string;
+  exitCode: number;
 }
 
 /**
  * Execute a command on a remote server via SSH
  */
 export function sshExec(
-    config: SSHConfig,
-    command: string,
-    options: { timeout?: number } = {}
+  config: SSHConfig,
+  command: string,
+  options: { timeout?: number } = {}
 ): Promise<SSHResult> {
-    return new Promise((resolve, reject) => {
-        const conn = new Client();
-        const timeout = options.timeout || 120000; // 2 minutes default
-        let output = "";
-        let stderr = "";
-        let timeoutId: NodeJS.Timeout;
+  return new Promise((resolve, reject) => {
+    const conn = new Client();
+    const timeout = options.timeout || 120000; // 2 minutes default
+    let output = "";
+    let stderr = "";
+    let timeoutId: NodeJS.Timeout;
 
-        conn.on("ready", () => {
-            conn.exec(command, (err, stream) => {
-                if (err) {
-                    conn.end();
-                    reject(err);
-                    return;
-                }
+    conn.on("ready", () => {
+      conn.exec(command, (err, stream) => {
+        if (err) {
+          conn.end();
+          reject(err);
+          return;
+        }
 
-                stream.on("close", (code: number) => {
-                    clearTimeout(timeoutId);
-                    conn.end();
-                    resolve({
-                        success: code === 0,
-                        output: output + stderr,
-                        exitCode: code,
-                    });
-                });
-
-                stream.on("data", (data: Buffer) => {
-                    output += data.toString();
-                });
-
-                stream.stderr.on("data", (data: Buffer) => {
-                    stderr += data.toString();
-                });
-            });
+        stream.on("close", (code: number) => {
+          clearTimeout(timeoutId);
+          conn.end();
+          resolve({
+            success: code === 0,
+            output: output + stderr,
+            exitCode: code,
+          });
         });
 
-        conn.on("error", (err) => {
-            clearTimeout(timeoutId);
-            reject(err);
+        stream.on("data", (data: Buffer) => {
+          output += data.toString();
         });
 
-        // Set connection timeout
-        timeoutId = setTimeout(() => {
-            conn.end();
-            reject(new Error("SSH connection timeout"));
-        }, timeout);
-
-        conn.connect({
-            host: config.host,
-            port: config.port || 22,
-            username: config.username,
-            password: config.password,
-            readyTimeout: 30000,
-            // Disable strict host key checking for ease of use
-            // In production, you might want to handle this differently
+        stream.stderr.on("data", (data: Buffer) => {
+          stderr += data.toString();
         });
+      });
     });
+
+    conn.on("error", (err) => {
+      clearTimeout(timeoutId);
+      reject(err);
+    });
+
+    // Set connection timeout
+    timeoutId = setTimeout(() => {
+      conn.end();
+      reject(new Error("SSH connection timeout"));
+    }, timeout);
+
+    conn.connect({
+      host: config.host,
+      port: config.port || 22,
+      username: config.username,
+      password: config.password,
+      readyTimeout: 30000,
+      // Disable strict host key checking for ease of use
+      // In production, you might want to handle this differently
+    });
+  });
 }
 
 /**
  * Test SSH connection to a server
  */
 export async function testSSHConnection(config: SSHConfig): Promise<boolean> {
-    try {
-        const result = await sshExec(config, "echo 'connected'", { timeout: 15000 });
-        return result.success && result.output.includes("connected");
-    } catch {
-        return false;
-    }
+  try {
+    const result = await sshExec(config, "echo 'connected'", { timeout: 15000 });
+    return result.success && result.output.includes("connected");
+  } catch {
+    return false;
+  }
 }
 
 /**
  * Check if MoaV is installed on the server
  */
 export async function isMoavInstalled(config: SSHConfig): Promise<boolean> {
-    try {
-        const result = await sshExec(config, "test -d /opt/moav && echo 'yes' || echo 'no'");
-        return result.output.trim() === "yes";
-    } catch {
-        return false;
-    }
+  try {
+    const result = await sshExec(config, "test -d /opt/moav && echo 'yes' || echo 'no'");
+    return result.output.trim() === "yes";
+  } catch {
+    return false;
+  }
 }
 
 /**
  * Install MoaV on the server
- * This runs the official MoaV installer
+ * Note: This function is for reference - the provision route has a more complete implementation
  */
 export async function installMoav(
-    config: SSHConfig,
-    onProgress?: (message: string) => void
+  config: SSHConfig,
+  onProgress?: (message: string) => void
 ): Promise<SSHResult> {
-    onProgress?.("Installing MoaV prerequisites...");
+  onProgress?.("Installing MoaV prerequisites...");
 
-    // The MoaV installer is interactive, so we need to run it in non-interactive mode
-    // We'll use environment variables to pre-configure it
-    const installCommand = `
+  // Download and run MoaV installer - note that moav.sh redirects to GitHub Pages
+  // The installer will be interactive, so this is mainly for systems with TTY
+  const installCommand = `
     export DEBIAN_FRONTEND=noninteractive
-    curl -fsSL moav.sh/install.sh | bash -s -- --non-interactive 2>&1 || true
+    curl -fsSL https://moav.sh/install.sh -o /tmp/moav-install.sh
+    chmod +x /tmp/moav-install.sh
+    echo "y" | bash /tmp/moav-install.sh 2>&1 || true
   `;
 
-    return sshExec(config, installCommand, { timeout: 300000 }); // 5 minute timeout
+  return sshExec(config, installCommand, { timeout: 300000 }); // 5 minute timeout
 }
 
 /**
  * Install and configure the MoaV agent on the server
  */
 export async function installAgent(
-    config: SSHConfig,
-    agentConfig: {
-        supabaseUrl: string;
-        supabaseServiceKey: string;
-        agentToken: string;
-    },
-    onProgress?: (message: string) => void
+  config: SSHConfig,
+  agentConfig: {
+    supabaseUrl: string;
+    supabaseServiceKey: string;
+    agentToken: string;
+  },
+  onProgress?: (message: string) => void
 ): Promise<SSHResult> {
-    onProgress?.("Installing Node.js if needed...");
+  onProgress?.("Installing Node.js if needed...");
 
-    // Install script that sets up the agent
-    const installScript = `
+  // Install script that sets up the agent
+  const installScript = `
 #!/bin/bash
 set -e
 
@@ -323,11 +325,77 @@ async function pollCommands(serverId) {
         execSync(\`cd /opt/moav && ./moav.sh restart \${payload.service || ""}\`, { encoding: "utf-8" });
         result = { success: true, data: { message: "Service restarted" } };
         break;
-      case "user:add":
-        execSync(\`cd /opt/moav && ./moav.sh user add \${payload.username}\`, { encoding: "utf-8" });
-        result = { success: true, data: { message: "User added" } };
+      case "user:add": {
+        const username = payload.username;
+        const vpnUserId = payload.vpn_user_id;
+        
+        // Create user with --package flag to generate bundle
+        console.log(\`[user:add] Creating user: \${username}\`);
+        execSync(\`cd /opt/moav && ./moav.sh user add \${username} --package\`, { encoding: "utf-8" });
+        
+        // Read the generated config files
+        const fs = await import("fs");
+        const path = await import("path");
+        const bundlePath = \`/opt/moav/outputs/bundles/\${username}\`;
+        const configRaw = {};
+        
+        const configFiles = [
+          { key: "reality", file: "reality.txt" },
+          { key: "trojan", file: "trojan.txt" },
+          { key: "hysteria2", file: "hysteria2.yaml" },
+          { key: "wireguard", file: "wireguard.conf" },
+          { key: "wireguard_wstunnel", file: "wireguard-wstunnel.conf" },
+          { key: "dnstt", file: "dnstt-instructions.txt" },
+        ];
+        
+        for (const { key, file } of configFiles) {
+          try {
+            const filePath = path.join(bundlePath, file);
+            if (fs.existsSync(filePath)) {
+              configRaw[key] = fs.readFileSync(filePath, "utf-8").trim();
+              console.log(\`[user:add] Read config: \${key}\`);
+            }
+          } catch (err) {
+            console.warn(\`[user:add] Could not read \${file}: \${err.message}\`);
+          }
+        }
+        
+        // Update database with config and mark as active
+        if (vpnUserId) {
+          const { error: updateError } = await supabase
+            .from("vpn_users")
+            .update({
+              status: "active",
+              config_raw: configRaw
+            })
+            .eq("id", vpnUserId);
+          
+          if (updateError) {
+            console.error(\`[user:add] DB update failed: \${updateError.message}\`);
+          } else {
+            console.log(\`[user:add] Updated DB with config for \${username}\`);
+          }
+        }
+        
+        result = { success: true, data: { message: "User added", username, config_raw: configRaw } };
         break;
+      }
+      case "user:update": {
+        const username = payload.username;
+        console.log(\`[user:update] Updating user: \${username}\`);
+        
+        if (payload.data_limit_gb) {
+          execSync(\`cd /opt/moav && ./moav.sh user limit \${username} \${payload.data_limit_gb}GB\`, { encoding: "utf-8" });
+        }
+        if (payload.expires_at) {
+          execSync(\`cd /opt/moav && ./moav.sh user expire \${username} "\${payload.expires_at}"\`, { encoding: "utf-8" });
+        }
+        
+        result = { success: true, data: { message: "User updated", username } };
+        break;
+      }
       case "user:revoke":
+        console.log(\`[user:revoke] Revoking user: \${payload.username}\`);
         execSync(\`cd /opt/moav && echo y | ./moav.sh user revoke \${payload.username}\`, { encoding: "utf-8" });
         result = { success: true, data: { message: "User revoked" } };
         break;
@@ -335,6 +403,7 @@ async function pollCommands(serverId) {
         result = { success: false, error: \`Unknown command: \${cmd.type}\` };
     }
   } catch (e) {
+    console.error(\`[command] Error executing \${cmd.type}: \${e.message}\`);
     result = { success: false, error: e.message };
   }
   
@@ -404,12 +473,12 @@ systemctl restart moav-agent
 echo "Agent installed and started successfully!"
 `;
 
-    // Write and execute the install script
-    const result = await sshExec(
-        config,
-        `cat > /tmp/install-agent.sh << 'SCRIPT'\n${installScript}\nSCRIPT\nchmod +x /tmp/install-agent.sh && /tmp/install-agent.sh`,
-        { timeout: 300000 } // 5 minute timeout
-    );
+  // Write and execute the install script
+  const result = await sshExec(
+    config,
+    `cat > /tmp/install-agent.sh << 'SCRIPT'\n${installScript}\nSCRIPT\nchmod +x /tmp/install-agent.sh && /tmp/install-agent.sh`,
+    { timeout: 300000 } // 5 minute timeout
+  );
 
-    return result;
+  return result;
 }

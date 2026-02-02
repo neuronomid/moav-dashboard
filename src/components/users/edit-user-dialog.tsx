@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useId } from "react";
 import { updateVpnUser } from "@/lib/actions/vpn-users";
 import { useRouter } from "next/navigation";
 import { Pencil } from "lucide-react";
@@ -34,6 +34,7 @@ const SUPPORTED_PROTOCOLS = [
 ];
 
 export function EditUserDialog({ user, serverId }: EditUserDialogProps) {
+    const dialogId = useId();
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const router = useRouter();
@@ -87,7 +88,7 @@ export function EditUserDialog({ user, serverId }: EditUserDialogProps) {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button variant="ghost" size="sm" title="Edit User">
+                <Button variant="ghost" size="sm" title="Edit User" suppressHydrationWarning>
                     <Pencil className="h-4 w-4" />
                     <span className="sr-only">Edit User</span>
                 </Button>

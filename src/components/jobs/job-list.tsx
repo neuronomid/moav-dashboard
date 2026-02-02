@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { Command } from "@/lib/types/database";
-import { timeAgo } from "@/lib/utils";
+import { TimeAgo } from "@/components/ui/time-ago";
 
 interface JobListProps {
   initialCommands: Command[];
@@ -57,10 +57,10 @@ export function JobList({ initialCommands, serverNames }: JobListProps) {
               <JobStatusBadge status={cmd.status} />
             </TableCell>
             <TableCell className="text-muted-foreground">
-              {timeAgo(cmd.created_at)}
+              <TimeAgo date={cmd.created_at} />
             </TableCell>
             <TableCell className="text-muted-foreground">
-              {cmd.completed_at ? timeAgo(cmd.completed_at) : "—"}
+              {cmd.completed_at ? <TimeAgo date={cmd.completed_at} /> : "—"}
             </TableCell>
           </TableRow>
         ))}

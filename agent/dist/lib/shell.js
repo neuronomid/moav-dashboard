@@ -3,7 +3,7 @@ import { promisify } from "util";
 const execAsync = promisify(exec);
 export async function runCommand(command) {
     try {
-        const { stdout, stderr } = await execAsync(command);
+        const { stdout, stderr } = await execAsync(command, { shell: '/bin/bash' });
         return { stdout, stderr };
     }
     catch (error) {

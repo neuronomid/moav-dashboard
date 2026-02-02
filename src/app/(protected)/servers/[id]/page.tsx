@@ -9,7 +9,8 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MOAV_SERVICES } from "@/lib/constants";
-import { isServerOnline, timeAgo } from "@/lib/utils";
+import { isServerOnline } from "@/lib/utils";
+import { TimeAgo } from "@/components/ui/time-ago";
 import type { ServerStatusJson, ServiceState } from "@/lib/types/database";
 import { Activity, Cpu, HardDrive, CheckCircle2, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -61,9 +62,7 @@ export default function ServerOverviewPage() {
             )}>
               {online ? "Online" : "Offline"}
             </div>
-            <p className="text-xs text-muted-foreground">
-              {timeAgo(server.last_seen_at)}
-            </p>
+            <TimeAgo date={server.last_seen_at} className="text-xs text-muted-foreground" />
           </CardContent>
         </Card>
 

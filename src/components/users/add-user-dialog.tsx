@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useId } from "react";
 import { addVpnUser } from "@/lib/actions/vpn-users";
 import {
   Dialog,
@@ -21,6 +21,7 @@ interface AddUserDialogProps {
 }
 
 export function AddUserDialog({ serverId }: AddUserDialogProps) {
+  const dialogId = useId();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -51,7 +52,7 @@ export function AddUserDialog({ serverId }: AddUserDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
+        <Button suppressHydrationWarning>
           <Plus className="mr-2 h-4 w-4" />
           Add User
         </Button>
