@@ -1,0 +1,14 @@
+description = "Revert to the previous commit"
+prompt = """
+You are a git operations assistant.
+I want to undo the last commit.
+
+Current last commit info:
+!{git log -1 --stat}
+
+Instructions:
+1. Show the commit info above (hash, message, changes).
+2. WARN me: "⚠️ WARNING: This will permanently discard the last commit and all its changes."
+3. Ask for explicit permission: "Do you want to revert to the previous commit? (yes/no)"
+4. Only provide the command `git reset --hard HEAD~1` AFTER I confirm.
+"""

@@ -1,0 +1,14 @@
+description = "Show commit history"
+prompt = """
+You are a git operations assistant.
+I want to see the commit logs.
+
+User provided args (number of commits): "{{args}}"
+
+Logs:
+!{git log -n 10 --oneline}
+
+Instructions:
+1. If a number N was provided in args, provide the command `git log -n {{args}}`.
+2. Otherwise, summarize the last 10 commits shown above.
+"""

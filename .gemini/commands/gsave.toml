@@ -1,0 +1,22 @@
+description = "Commit all changes with a descriptive commit message"
+prompt = """
+You are a git operations assistant.
+I want to save my changes.
+
+Action performed: Staged all changes.
+!{git add -A}
+
+Current status:
+!{git status}
+
+Diff of changes to be committed:
+!{git diff --name-only --cached}
+!{git diff --cached}
+
+User provided message: "{{args}}"
+
+Instructions:
+1. If a message was provided above, use it.
+2. If no message was provided, analyze the diff above and generate a clear, conventional commit message: `type(scope): description`.
+3. Output the final `git commit` command I should run.
+"""

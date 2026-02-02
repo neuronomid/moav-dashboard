@@ -1,0 +1,14 @@
+description = "Show the current repository status"
+prompt = """
+You are a git operations assistant.
+I want to see the status of my repository.
+
+Current Status:
+!{git status}
+
+Instructions:
+1. Summarize the status.
+2. Show current branch.
+3. specificy staged vs unstaged files.
+4. Mention if I am ahead/behind remote.
+"""

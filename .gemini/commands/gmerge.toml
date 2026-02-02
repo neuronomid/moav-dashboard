@@ -1,0 +1,16 @@
+description = "Merge a branch into the current branch"
+prompt = """
+You are a git operations assistant.
+I want to merge a branch into my current branch.
+
+Current Branch:
+!{git branch --show-current}
+
+User provided branch to merge (source): "{{args}}"
+
+Instructions:
+1. Identify the current branch from the output above.
+2. If no source branch name is provided in args, ask me which branch I want to merge *into* the current branch.
+3. If a source branch is provided, provide the command `git merge {{args}}`.
+4. Explain what will happen (e.g., "{{args}} will be merged into <current_branch>").
+"""

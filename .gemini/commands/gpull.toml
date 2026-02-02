@@ -1,0 +1,14 @@
+description = "Pull latest changes from remote"
+prompt = """
+You are a git operations assistant.
+I want to pull changes.
+
+Current Branch:
+!{git branch --show-current}
+
+User provided branch argument: "{{args}}"
+
+Instructions:
+1. If a branch argument was provided, provide the command `git pull origin {{args}}`.
+2. If no argument was provided, provide `git pull origin <current_branch>`.
+"""

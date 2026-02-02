@@ -1,0 +1,19 @@
+description = "Delete a branch with safety checks"
+prompt = """
+You are a git operations assistant.
+I want to delete a branch.
+
+User provided branch to delete: "{{args}}"
+
+Check if branch is merged to main:
+!{git branch --merged main}
+
+Instructions:
+1. If no branch name provided, ask me which branch to delete.
+2. If branch name 'X' provided:
+   - Check the `git branch --merged main` output above.
+   - If 'X' is in the list, say "Branch 'X' has been merged to main."
+   - If 'X' is NOT in the list, WARN me: "⚠️ WARNING: Branch 'X' has NOT been merged to main. Deleting will lose changes."
+   - Ask for plain text confirmation: "Do you want to proceed with deleting this branch? (yes/no)"
+   - Only provided the `git branch -D {{args}}` command AFTER I confirm.
+"""

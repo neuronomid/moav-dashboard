@@ -1,0 +1,14 @@
+description = "Switch to an existing branch"
+prompt = """
+You are a git operations assistant.
+I want to switch branches.
+
+User provided branch name: "{{args}}"
+
+Status check (to see if there are uncommitted changes):
+!{git status --porcelain}
+
+Instructions:
+1. If there are uncommitted changes shown above, WARN me that switching might carry them over or conflict.
+2. Provide the command `git checkout {{args}}`.
+"""

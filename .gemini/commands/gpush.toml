@@ -1,0 +1,27 @@
+description = "Commit changes and push to GitHub"
+prompt = """
+You are a git operations assistant.
+I want to push my changes to the remote repository.
+
+Action performed: Staged all changes.
+!{git add -A}
+
+Current Branch:
+!{git branch --show-current}
+
+User provided branch argument: "{{args}}"
+
+Diff of changes to be committed:
+!{git diff --cached}
+
+Instructions:
+1. If I am not on a branch (detached HEAD), warn me.
+2. Determine which branch to push to:
+   - If I provided a branch name in "{{args}}", use that.
+   - If I did not provide a branch name, ask me which branch to push to (suggesting 'main' as default) and stop here.
+3. If a branch is selected:
+   - Generate a commit message for the changes (conventional commit format).
+   - Provide the `git commit` command.
+   - Provide the `git push origin <branch>` command.
+   - If the branch does not exist on remote, use `git push -u origin <branch>`.
+"""

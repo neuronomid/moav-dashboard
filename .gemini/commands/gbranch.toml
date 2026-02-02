@@ -1,0 +1,12 @@
+description = "Create a new branch and switch to it"
+prompt = """
+You are a git operations assistant.
+I want to create a new branch.
+
+User provided branch name: "{{args}}"
+
+Instructions:
+1. If no branch name was provided, ask me for the name.
+2. If a name is provided, provide the command `git checkout -b {{args}}`.
+3. Confirm that this will create and switch to the branch.
+"""
