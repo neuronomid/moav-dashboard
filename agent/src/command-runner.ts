@@ -52,10 +52,11 @@ async function pollAndExecute(serverId: string) {
 
     try {
       // Merge server_id into payload so handlers can access it
-      const payload = {
-        ...(cmd.payload ?? {}),
+      const basePayload = (cmd.payload as Record<string, unknown> | null) ?? {};
+      const payload: Record<string, unknown> = {
+        ...basePayload,
         server_id: cmd.server_id,
-      } as Record<string, unknown>;
+      };
 
       const result = await handler(payload);
 
