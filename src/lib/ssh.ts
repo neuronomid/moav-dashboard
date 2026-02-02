@@ -290,7 +290,7 @@ async function pollCommands(serverId) {
     .from("commands")
     .select("*")
     .eq("server_id", serverId)
-    .eq("status", "pending")
+    .eq("status", "queued")
     .order("created_at", { ascending: true })
     .limit(1);
 
@@ -306,9 +306,9 @@ async function pollCommands(serverId) {
   }).eq("id", cmd.id);
   
   let result = { success: false, error: "Unknown command" };
-  
+
   try {
-    const payload = cmd.payload || {};
+    const payload = cmd.payload_json || {};
     
     switch (cmd.type) {
       case "service:start":
@@ -340,9 +340,8 @@ async function pollCommands(serverId) {
   
   // Update completion
   await supabase.from("commands").update({
-    status: result.success ? "completed" : "failed",
-    result: result.success ? { data: result.data } : { error: result.error },
-    error: result.success ? null : result.error,
+    status: result.success ? "succeeded" : "failed",
+    result_json: result.success ? { data: result.data } : { error: result.error },
     completed_at: new Date().toISOString(),
   }).eq("id", cmd.id);
   

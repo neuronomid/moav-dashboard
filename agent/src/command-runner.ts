@@ -10,7 +10,7 @@ async function pollAndExecute(serverId: string) {
     .from("commands")
     .select("*")
     .eq("server_id", serverId)
-    .eq("status", "pending")
+    .eq("status", "queued")
     .order("created_at", { ascending: true })
     .limit(5);
 
@@ -42,8 +42,7 @@ async function pollAndExecute(serverId: string) {
         .from("commands")
         .update({
           status: "failed",
-          result: { error: `Unknown command type: ${cmd.type}` },
-          error: `Unknown command type: ${cmd.type}`,
+          result_json: { error: `Unknown command type: ${cmd.type}` },
           completed_at: new Date().toISOString(),
         })
         .eq("id", cmd.id);
@@ -52,7 +51,7 @@ async function pollAndExecute(serverId: string) {
 
     try {
       // Merge server_id into payload so handlers can access it
-      const basePayload = (cmd.payload as Record<string, unknown> | null) ?? {};
+      const basePayload = (cmd.payload_json as Record<string, unknown> | null) ?? {};
       const payload: Record<string, unknown> = {
         ...basePayload,
         server_id: cmd.server_id,
@@ -63,11 +62,10 @@ async function pollAndExecute(serverId: string) {
       await supabase
         .from("commands")
         .update({
-          status: result.success ? "completed" : "failed",
-          result: (result.success
+          status: result.success ? "succeeded" : "failed",
+          result_json: (result.success
             ? { data: result.data ?? null }
             : { error: result.error ?? null }) as Json,
-          error: result.success ? null : (result.error ?? null),
           completed_at: new Date().toISOString(),
         })
         .eq("id", cmd.id);
@@ -84,8 +82,7 @@ async function pollAndExecute(serverId: string) {
         .from("commands")
         .update({
           status: "failed",
-          result: { error: message },
-          error: message,
+          result_json: { error: message },
           completed_at: new Date().toISOString(),
         })
         .eq("id", cmd.id);

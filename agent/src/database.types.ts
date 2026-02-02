@@ -16,10 +16,9 @@ export type Database = {
                 Row: {
                     completed_at: string | null
                     created_at: string
-                    error: string | null
                     id: string
-                    payload: Json | null
-                    result: Json | null
+                    payload_json: Json | null
+                    result_json: Json | null
                     server_id: string
                     started_at: string | null
                     status: string
@@ -28,10 +27,9 @@ export type Database = {
                 Insert: {
                     completed_at?: string | null
                     created_at?: string
-                    error?: string | null
                     id?: string
-                    payload?: Json | null
-                    result?: Json | null
+                    payload_json?: Json | null
+                    result_json?: Json | null
                     server_id: string
                     started_at?: string | null
                     status?: string
@@ -40,10 +38,9 @@ export type Database = {
                 Update: {
                     completed_at?: string | null
                     created_at?: string
-                    error?: string | null
                     id?: string
-                    payload?: Json | null
-                    result?: Json | null
+                    payload_json?: Json | null
+                    result_json?: Json | null
                     server_id?: string
                     started_at?: string | null
                     status?: string

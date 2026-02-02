@@ -7,7 +7,7 @@ async function pollAndExecute(serverId) {
         .from("commands")
         .select("*")
         .eq("server_id", serverId)
-        .eq("status", "pending")
+        .eq("status", "queued")
         .order("created_at", { ascending: true })
         .limit(5);
     if (error) {
@@ -34,8 +34,7 @@ async function pollAndExecute(serverId) {
                 .from("commands")
                 .update({
                 status: "failed",
-                result: { error: `Unknown command type: ${cmd.type}` },
-                error: `Unknown command type: ${cmd.type}`,
+                result_json: { error: `Unknown command type: ${cmd.type}` },
                 completed_at: new Date().toISOString(),
             })
                 .eq("id", cmd.id);
@@ -43,7 +42,7 @@ async function pollAndExecute(serverId) {
         }
         try {
             // Merge server_id into payload so handlers can access it
-            const basePayload = cmd.payload ?? {};
+            const basePayload = cmd.payload_json ?? {};
             const payload = {
                 ...basePayload,
                 server_id: cmd.server_id,
@@ -52,11 +51,10 @@ async function pollAndExecute(serverId) {
             await supabase
                 .from("commands")
                 .update({
-                status: result.success ? "completed" : "failed",
-                result: (result.success
+                status: result.success ? "succeeded" : "failed",
+                result_json: (result.success
                     ? { data: result.data ?? null }
                     : { error: result.error ?? null }),
-                error: result.success ? null : (result.error ?? null),
                 completed_at: new Date().toISOString(),
             })
                 .eq("id", cmd.id);
@@ -69,8 +67,7 @@ async function pollAndExecute(serverId) {
                 .from("commands")
                 .update({
                 status: "failed",
-                result: { error: message },
-                error: message,
+                result_json: { error: message },
                 completed_at: new Date().toISOString(),
             })
                 .eq("id", cmd.id);

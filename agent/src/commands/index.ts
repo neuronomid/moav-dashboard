@@ -11,6 +11,7 @@ import {
   serverLogs,
   serverExport,
   serverTest,
+  serverHealthCheck,
 } from "./real.js";
 
 /**
@@ -29,4 +30,5 @@ export const commandRegistry = new Map<string, CommandHandler>([
   ["server:logs", serverLogs],
   ["server:export", serverExport],
   ["server:test", serverTest],
+  ["server:health-check", serverHealthCheck],
 ]);

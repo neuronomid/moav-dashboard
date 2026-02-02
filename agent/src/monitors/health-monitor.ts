@@ -346,6 +346,14 @@ async function performHealthCheck() {
 }
 
 /**
+ * Manually trigger an immediate health check
+ * Used by the server:health-check command
+ */
+export async function triggerHealthCheck() {
+  return performHealthCheck();
+}
+
+/**
  * Start the health monitor
  */
 export function startHealthMonitor(serverIdParam: string) {

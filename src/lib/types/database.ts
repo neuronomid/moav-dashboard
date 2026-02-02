@@ -60,10 +60,11 @@ export interface VpnUserAccessEffective {
 }
 
 export type CommandStatus =
-  | "pending"
+  | "queued"
   | "running"
-  | "completed"
-  | "failed";
+  | "succeeded"
+  | "failed"
+  | "cancelled";
 
 export type CommandType =
   | "service:start"
@@ -73,6 +74,7 @@ export type CommandType =
   | "server:logs"
   | "server:export"
   | "server:test"
+  | "server:health-check"
   | "user:add"
   | "user:revoke"
   | "user:update-access"
@@ -82,10 +84,9 @@ export interface Command {
   id: string;
   server_id: string;
   type: CommandType;
-  payload: Record<string, unknown> | null;
+  payload_json: Record<string, unknown> | null;
   status: CommandStatus;
-  result: Record<string, unknown> | null;
-  error: string | null;
+  result_json: Record<string, unknown> | null;
   created_at: string;
   started_at: string | null;
   completed_at: string | null;
@@ -110,5 +111,5 @@ export type VpnUserInsert = Pick<VpnUser, "server_id" | "username"> &
 /** Convenience type for inserting a new command */
 export type CommandInsert = Pick<
   Command,
-  "server_id" | "type" | "payload"
+  "server_id" | "type" | "payload_json"
 >;

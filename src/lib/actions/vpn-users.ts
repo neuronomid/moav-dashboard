@@ -34,7 +34,7 @@ export async function addVpnUser(
   const { error: cmdError } = await supabase.from("commands").insert({
     server_id: serverId,
     type: "user:add",
-    payload: { username, vpn_user_id: user.id } as Json,
+    payload_json: { username, vpn_user_id: user.id } as Json,
   });
 
   if (cmdError) {
@@ -79,7 +79,7 @@ export async function updateVpnUser(
   const { error: cmdError } = await supabase.from("commands").insert({
     server_id: serverId,
     type: "user:update",
-    payload: { vpn_user_id: vpnUserId, ...updates } as Json,
+    payload_json: { vpn_user_id: vpnUserId, ...updates } as Json,
   });
 
   if (cmdError) {
@@ -108,7 +108,7 @@ export async function revokeVpnUser(serverId: string, vpnUserId: string) {
   const { error: cmdError } = await supabase.from("commands").insert({
     server_id: serverId,
     type: "user:revoke",
-    payload: { username: user.username, vpn_user_id: vpnUserId } as Json,
+    payload_json: { username: user.username, vpn_user_id: vpnUserId } as Json,
   });
 
   if (cmdError) {

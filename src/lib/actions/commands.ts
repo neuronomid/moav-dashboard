@@ -21,7 +21,7 @@ export async function createCommand(
     .insert({
       server_id: serverId,
       type,
-      payload: payload as Json,
+      payload_json: payload as Json,
     })
     .select()
     .single();

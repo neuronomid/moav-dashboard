@@ -98,8 +98,8 @@ export function HealthDialog({ serverId, status, trigger }: HealthDialogProps) {
         .insert({
           server_id: serverId,
           type: "server:health-check",
-          payload: {},
-          status: "pending",
+          payload_json: {},
+          status: "queued",
         });
 
       if (error) throw error;
@@ -127,8 +127,8 @@ export function HealthDialog({ serverId, status, trigger }: HealthDialogProps) {
         .insert({
           server_id: serverId,
           type: "service:restart",
-          payload: { service: serviceId },
-          status: "pending",
+          payload_json: { service: serviceId },
+          status: "queued",
         });
 
       if (error) throw error;
