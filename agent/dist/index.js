@@ -2,6 +2,8 @@ import "dotenv/config";
 import { supabase } from "./supabase.js";
 import { startHeartbeat, stopHeartbeat } from "./heartbeat.js";
 import { startCommandRunner, stopCommandRunner } from "./command-runner.js";
+import { startExpirationMonitor, stopExpirationMonitor } from "./monitors/expiration-monitor.js";
+import { startUsageMonitor, stopUsageMonitor } from "./monitors/usage-monitor.js";
 const AGENT_TOKEN = process.env.AGENT_TOKEN;
 if (!AGENT_TOKEN) {
     console.error("Missing AGENT_TOKEN environment variable");
@@ -30,18 +32,31 @@ async function register() {
 }
 async function main() {
     console.log("MoaV Agent starting...");
+    console.log("================================");
     const serverId = await register();
-    console.log("Starting heartbeat (15s interval)...");
+    console.log("\nStarting services:");
+    console.log("- Heartbeat (15s interval)...");
     startHeartbeat(serverId);
-    console.log("Starting command runner (5s poll)...");
+    console.log("- Command runner (5s poll)...");
     startCommandRunner(serverId);
-    console.log("Agent is running. Press Ctrl+C to stop.");
+    console.log("- Expiration monitor (hourly check)...");
+    startExpirationMonitor(serverId);
+    console.log("- Usage monitor (15min updates)...");
+    startUsageMonitor(serverId);
+    console.log("\n================================");
+    console.log("✓ Agent is running. Press Ctrl+C to stop.");
+    console.log("================================\n");
 }
 // Graceful shutdown
 function shutdown() {
-    console.log("\nShutting down...");
+    console.log("\n================================");
+    console.log("Shutting down gracefully...");
+    console.log("================================");
     stopHeartbeat();
     stopCommandRunner();
+    stopExpirationMonitor();
+    stopUsageMonitor();
+    console.log("✓ All services stopped");
     process.exit(0);
 }
 process.on("SIGINT", shutdown);

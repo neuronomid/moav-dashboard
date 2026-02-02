@@ -165,7 +165,11 @@ export type Database = {
             vpn_users: {
                 Row: {
                     access_policy: Json | null
+                    config_raw: Json | null
                     created_at: string
+                    data_limit_gb: number | null
+                    data_used_gb: number | null
+                    expires_at: string | null
                     id: string
                     note: string | null
                     server_id: string
@@ -175,7 +179,11 @@ export type Database = {
                 }
                 Insert: {
                     access_policy?: Json | null
+                    config_raw?: Json | null
                     created_at?: string
+                    data_limit_gb?: number | null
+                    data_used_gb?: number | null
+                    expires_at?: string | null
                     id?: string
                     note?: string | null
                     server_id: string
@@ -185,7 +193,11 @@ export type Database = {
                 }
                 Update: {
                     access_policy?: Json | null
+                    config_raw?: Json | null
                     created_at?: string
+                    data_limit_gb?: number | null
+                    data_used_gb?: number | null
+                    expires_at?: string | null
                     id?: string
                     note?: string | null
                     server_id?: string

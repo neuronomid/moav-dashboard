@@ -36,6 +36,7 @@ export interface VpnUser {
   access_policy: AccessPolicy | null;
   config_raw: Record<string, string> | null;
   data_limit_gb: number | null;
+  data_used_gb: number | null;
   expires_at: string | null;
   created_at: string;
   updated_at: string;
