@@ -105,7 +105,7 @@ export default function AddServerPage() {
               Server Setup
             </CardTitle>
             <CardDescription>
-              We'll connect via SSH to set up everything automatically.
+              We&apos;ll connect via SSH to set up everything automatically.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -180,7 +180,7 @@ export default function AddServerPage() {
                 <TabsContent value="existing" className="mt-4">
                   <div className="rounded-lg border bg-muted/50 p-3 text-sm">
                     <p className="text-muted-foreground">
-                      ✓ MoaV is already installed on this server. We'll just install the agent.
+                      ✓ MoaV is already installed on this server. We&apos;ll just install the agent.
                     </p>
                   </div>
                 </TabsContent>
@@ -188,7 +188,7 @@ export default function AddServerPage() {
                 <TabsContent value="fresh" className="mt-4 space-y-4">
                   <div className="rounded-lg border bg-blue-500/10 border-blue-500/30 p-3 text-sm">
                     <p className="text-blue-700 dark:text-blue-300">
-                      We'll install MoaV (the VPN software) first, then the agent.
+                      We&apos;ll install MoaV (the VPN software) first, then the agent.
                     </p>
                   </div>
 
@@ -315,8 +315,8 @@ function Step({
   return (
     <div className={`flex gap-3 ${active ? "text-foreground" : done ? "text-muted-foreground" : "text-muted-foreground/60"}`}>
       <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-medium ${done ? "bg-green-500 text-white" :
-          active ? "bg-primary text-primary-foreground" :
-            "bg-muted text-muted-foreground"
+        active ? "bg-primary text-primary-foreground" :
+          "bg-muted text-muted-foreground"
         }`}>
         {done ? <CheckCircle2 className="h-4 w-4" /> : number}
       </div>

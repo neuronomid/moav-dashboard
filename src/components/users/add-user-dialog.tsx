@@ -31,8 +31,13 @@ export function AddUserDialog({ serverId }: AddUserDialogProps) {
     const formData = new FormData(e.currentTarget);
     const username = formData.get("username") as string;
     const note = formData.get("note") as string;
+    const dataLimitStr = formData.get("dataLimit") as string;
+    const expiryStr = formData.get("expiry") as string;
 
-    const result = await addVpnUser(serverId, username, note);
+    const dataLimit = dataLimitStr ? parseInt(dataLimitStr) : undefined;
+    const expiry = expiryStr ? new Date(expiryStr).toISOString() : undefined;
+
+    const result = await addVpnUser(serverId, username, note, dataLimit, expiry);
 
     if (result.error) {
       toast.error(result.error);
@@ -67,7 +72,7 @@ export function AddUserDialog({ serverId }: AddUserDialogProps) {
               name="username"
               placeholder="alice"
               required
-              pattern="[a-zA-Z0-9_-]+"
+              pattern="[a-zA-Z0-9_\-]+"
               title="Letters, numbers, hyphens, and underscores only"
             />
           </div>
@@ -78,6 +83,27 @@ export function AddUserDialog({ serverId }: AddUserDialogProps) {
               name="note"
               placeholder="e.g. Family member"
             />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="dataLimit">Data Limit (GB)</Label>
+              <Input
+                id="dataLimit"
+                name="dataLimit"
+                type="number"
+                min="1"
+                placeholder="Optional"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="expiry">Expiry Date</Label>
+              <Input
+                id="expiry"
+                name="expiry"
+                type="date"
+                min={new Date().toISOString().split("T")[0]}
+              />
+            </div>
           </div>
           <div className="flex justify-end gap-2">
             <Button

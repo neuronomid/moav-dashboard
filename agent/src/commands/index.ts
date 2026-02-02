@@ -4,13 +4,14 @@ import {
   serviceStop,
   serviceRestart,
   userAdd,
+  userUpdate,
   userRevoke,
   userUpdateAccess,
   serverStatus,
   serverLogs,
   serverExport,
   serverTest,
-} from "./stubs.js";
+} from "./real.js";
 
 /**
  * Command allowlist: only these command types will be executed.
@@ -21,6 +22,7 @@ export const commandRegistry = new Map<string, CommandHandler>([
   ["service:stop", serviceStop],
   ["service:restart", serviceRestart],
   ["user:add", userAdd],
+  ["user:update", userUpdate],
   ["user:revoke", userRevoke],
   ["user:update-access", userUpdateAccess],
   ["server:status", serverStatus],

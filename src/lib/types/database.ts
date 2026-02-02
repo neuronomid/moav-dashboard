@@ -34,6 +34,9 @@ export interface VpnUser {
   status: VpnUserStatus;
   note: string | null;
   access_policy: AccessPolicy | null;
+  config_raw: Record<string, string> | null;
+  data_limit_gb: number | null;
+  expires_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -71,7 +74,8 @@ export type CommandType =
   | "server:test"
   | "user:add"
   | "user:revoke"
-  | "user:update-access";
+  | "user:update-access"
+  | "user:update";
 
 export interface Command {
   id: string;

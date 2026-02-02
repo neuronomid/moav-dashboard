@@ -51,7 +51,13 @@ async function pollAndExecute(serverId: string) {
     }
 
     try {
-      const result = await handler((cmd.payload ?? {}) as Record<string, unknown>);
+      // Merge server_id into payload so handlers can access it
+      const payload = {
+        ...(cmd.payload ?? {}),
+        server_id: cmd.server_id,
+      } as Record<string, unknown>;
+
+      const result = await handler(payload);
 
       await supabase
         .from("commands")

@@ -194,7 +194,7 @@ export function ServerSettingsForm({ server }: ServerSettingsFormProps) {
                                     </DialogDescription>
                                 </DialogHeader>
                                 <ul className="ml-4 list-disc space-y-1 text-sm text-muted-foreground">
-                                    <li>All VPN users associated with this server</li>
+                                    <li>We&apos;ll delete all data associated with this server.</li>
                                     <li>All logs and command history</li>
                                     <li>Server configuration and settings</li>
                                 </ul>
