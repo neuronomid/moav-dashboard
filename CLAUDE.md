@@ -71,6 +71,12 @@ MoaV (https://github.com/shayanb/MoaV) is a Docker-based multi-protocol censorsh
 - Bundle output: wireguard.conf, wireguard-ipv6.conf, wireguard-wstunnel.conf, wireguard-instructions.txt, QR PNG
 - Credentials: `state/users/$USERNAME/wireguard.env`
 
+**dnstt (DNS Tunnel):**
+- Script: `scripts/dnstt-user-add.sh`
+- Bundle output: dnstt.txt (DNS tunnel connection config)
+- Agent reads: `outputs/bundles/$USERNAME/dnstt.txt` when creating users
+- Config stored in `vpn_users.config_raw` for dashboard display
+
 ### User Revocation Details
 
 **sing-box:** `scripts/singbox-user-revoke.sh` — uses `jq` to filter user from all inbounds in `config.json`, validates JSON, then reloads sing-box
@@ -98,6 +104,7 @@ MoaV (https://github.com/shayanb/MoaV) is a Docker-based multi-protocol censorsh
 │       ├── hysteria2.txt     # Hysteria2 link
 │       ├── wireguard.conf    # WG direct config
 │       ├── wireguard-wstunnel.conf
+│       ├── dnstt.txt         # DNS tunnel config
 │       ├── *.png             # QR codes
 │       └── $USERNAME.zip     # Full bundle (if --package)
 ├── scripts/                  # Automation scripts
@@ -215,6 +222,21 @@ The dashboard agent translates command records into MoaV CLI calls:
 5. **Usage Monitor** (15-minute interval)
    - Fetches usage stats from MoaV admin API
    - Updates `vpn_users.current_usage` for each user
+
+### Agent User Config Reading
+
+When the agent executes a `user:add` command, it reads the following config files from `/opt/moav/outputs/bundles/$USERNAME/` and stores them in `vpn_users.config_raw`:
+
+- `reality.txt` → config_raw.reality
+- `trojan.txt` → config_raw.trojan
+- `hysteria2.txt` → config_raw.hysteria2
+- `wireguard.conf` → config_raw.wireguard
+- `wireguard-wstunnel.conf` → config_raw.wireguard_wstunnel
+- `dnstt.txt` → config_raw.dnstt
+
+**Note**: Files are read with error tolerance - if a protocol is disabled or file missing, the agent logs a warning and continues. This allows partial protocol deployments.
+
+**Implementation**: [agent/src/commands/real.ts:56-72](agent/src/commands/real.ts#L56-L72)
 
 ### systemd Service Configuration
 
