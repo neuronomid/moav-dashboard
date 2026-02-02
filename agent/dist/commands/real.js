@@ -1,5 +1,6 @@
 import { runCommand } from "../lib/shell.js";
 import { supabase } from "../supabase.js";
+import { triggerHealthCheck } from "../monitors/health-monitor.js";
 import fs from "fs/promises";
 import path from "path";
 // MoaV installation path - adjust if installed elsewhere
@@ -50,6 +51,7 @@ export const userAdd = async (payload) => {
             { key: 'hysteria2', file: 'hysteria2.txt' },
             { key: 'wireguard', file: 'wireguard.conf' },
             { key: 'wireguard_wstunnel', file: 'wireguard-wstunnel.conf' },
+            { key: 'dnstt', file: 'dnstt.txt' },
         ];
         for (const { key, file } of files) {
             try {
@@ -188,5 +190,12 @@ export const serverTest = async (payload) => {
     return {
         success: true,
         data
+    };
+};
+export const serverHealthCheck = async () => {
+    await triggerHealthCheck();
+    return {
+        success: true,
+        data: { message: "Health check completed and auto-remediation applied if needed" }
     };
 };
