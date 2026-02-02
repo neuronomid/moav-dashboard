@@ -174,13 +174,16 @@ async function logRemediationEvent(
   if (!serverId) return;
 
   try {
+    const logLine = details
+      ? `[AUTO-REMEDIATION] ${issue} - ${action}: ${success ? "SUCCESS" : "FAILED"} - ${details}`
+      : `[AUTO-REMEDIATION] ${issue} - ${action}: ${success ? "SUCCESS" : "FAILED"}`;
+
     await supabase.from("log_events").insert({
       server_id: serverId,
       service: serviceName,
       level: success ? "info" : "error",
-      message: `[AUTO-REMEDIATION] ${issue} - ${action}: ${success ? "SUCCESS" : "FAILED"}`,
-      details: details || null,
-      timestamp: new Date().toISOString(),
+      line: logLine,
+      ts: new Date().toISOString(),
     });
   } catch (error) {
     console.error("[health-monitor] Failed to log remediation event:", error);
