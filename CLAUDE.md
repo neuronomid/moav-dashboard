@@ -158,6 +158,135 @@ The dashboard agent translates command records into MoaV CLI calls:
 - Secrets redacted from logs, never stored plaintext
 - New VPN users get all services enabled by default
 
+## Agent Architecture
+
+### Agent Directory Structure (on VPS)
+
+```
+/opt/moav-agent/              ← Full git repository (cloned from GitHub)
+├── agent/                    ← Agent code (working directory)
+│   ├── src/
+│   │   ├── monitors/
+│   │   │   ├── heartbeat.ts           # Reports status every 15s
+│   │   │   ├── command-runner.ts      # Polls commands table every 5s
+│   │   │   ├── health-monitor.ts      # Auto-remediation every 60s
+│   │   │   ├── expiration-monitor.ts  # Checks expired users hourly
+│   │   │   └── usage-monitor.ts       # Updates usage every 15min
+│   │   └── index.ts                   # Main entry point
+│   ├── dist/                          ← Compiled JavaScript (from tsc)
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── .env                           ← Configuration (Supabase, agent token)
+├── src/                               ← Dashboard code (Next.js)
+├── supabase/                          ← Database migrations
+└── ... (other dashboard files)
+```
+
+### Agent Monitors (5 total)
+
+1. **Heartbeat Monitor** (15s interval)
+   - Reports server status to `servers.status_json`
+   - Updates `last_seen_at` timestamp
+   - Collects: CPU, memory, disk, Docker service states, MoaV version
+
+2. **Command Runner** (5s poll)
+   - Polls `commands` table for pending commands
+   - Executes MoaV CLI operations (user add/revoke, service control, etc.)
+   - Updates command status: pending → running → succeeded/failed
+
+3. **Health Monitor** (60s interval) ⭐ NEW
+   - Auto-detects service issues:
+     - Services stuck in "restarting" state > 3 minutes
+     - Critical services (sing-box, wireguard, admin) stopped
+     - Services unhealthy
+   - Auto-remediation strategy:
+     - First attempt: `docker compose restart <service>`
+     - Subsequent attempts: `docker compose down + up <service>`
+   - Smart retry logic:
+     - 5-minute cooldown between attempts
+     - Max 3 attempts per issue
+     - Reset counter after 1 hour
+   - Logs all remediation events to `log_events` with `[AUTO-REMEDIATION]` prefix
+
+4. **Expiration Monitor** (hourly check)
+   - Checks `vpn_users` for expired users (`expires_at < now`)
+   - Automatically revokes expired users via `moav user revoke`
+
+5. **Usage Monitor** (15-minute interval)
+   - Fetches usage stats from MoaV admin API
+   - Updates `vpn_users.current_usage` for each user
+
+### systemd Service Configuration
+
+- **Location**: `/etc/systemd/system/moav-agent.service`
+- **Working Directory**: `/opt/moav-agent/agent`
+- **Exec Start**: `/usr/bin/node /opt/moav-agent/agent/dist/index.js`
+- **Environment File**: `/opt/moav-agent/agent/.env`
+- **Restart Policy**: Always, with 10s delay
+
+### Agent Deployment Process
+
+**Initial Setup:**
+```bash
+# On VPS
+cd /opt
+git clone https://github.com/YOUR_USERNAME/moav-dashboard.git moav-agent
+cd moav-agent/agent
+cp .env.example .env
+# Edit .env with Supabase URL, service role key, agent token, MoaV path
+npm install
+npm run build
+
+# Create systemd service
+sudo nano /etc/systemd/system/moav-agent.service
+# (see agent/INSTALL.md for service file content)
+
+sudo systemctl daemon-reload
+sudo systemctl enable moav-agent
+sudo systemctl start moav-agent
+```
+
+**Update Process:**
+```bash
+# On VPS
+cd /opt/moav-agent/agent
+git pull origin master
+npm install
+npm run build
+sudo systemctl restart moav-agent
+sudo journalctl -u moav-agent -f  # Watch logs
+```
+
+**Quick Update (after GitHub push):**
+```bash
+# From local machine - push changes
+git push origin master
+
+# On VPS - update agent
+cd /opt/moav-agent/agent && git pull && npm install && npm run build && sudo systemctl restart moav-agent
+```
+
+### Health Monitoring Details
+
+**Dashboard Integration:**
+- Health card on server overview page is clickable
+- Opens dialog with 3 tabs:
+  1. **Overview**: Current health status, system metrics, detected issues, manual troubleshooting
+  2. **Auto-Remediation**: History of automatic fixes from `log_events` table
+  3. **Service Logs**: Recent logs (excludes auto-remediation logs)
+
+**Manual Actions Available:**
+- `server:health-check` command - Triggers immediate health check + remediation
+- `service:restart` command - Manually restart specific service
+
+**Database Schema for Health Monitoring:**
+- `log_events` table stores remediation logs with fields:
+  - `line` (string): Log message with `[AUTO-REMEDIATION]` prefix
+  - `ts` (timestamp): Event timestamp
+  - `service` (string): Service name (e.g., "sing-box", "wireguard")
+  - `level` (string): "info" for success, "error" for failure
+  - `server_id` (uuid): Reference to `servers` table
+
 ## Development Commands
 
 ```bash
@@ -166,8 +295,11 @@ npm run dev          # Start dev server
 npm run build        # Production build
 npm run lint         # ESLint
 
-# Agent stub
+# Agent (development)
 cd agent && npm run dev    # Start agent with tsx watch
+
+# Agent (production on VPS)
+cd agent && npm run build  # Compile TypeScript
 cd agent && npm start      # Start agent (production)
 
 # Supabase (local)
