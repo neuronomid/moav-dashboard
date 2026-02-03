@@ -6,7 +6,7 @@ import type { Command, Server } from "@/lib/types/database";
 export default async function JobsPage() {
   const supabase = await createClient();
 
-  const [{ data: commands }, { data: servers }] = await Promise.all([
+  const [{ data: commandsRaw }, { data: servers }] = await Promise.all([
     supabase
       .from("commands")
       .select("*")
@@ -20,6 +20,19 @@ export default async function JobsPage() {
     serverNames[s.id] = s.name;
   });
 
+  // Transform database columns to match Command type
+  const commands: Command[] = (commandsRaw ?? []).map((cmd: any) => ({
+    id: cmd.id,
+    server_id: cmd.server_id,
+    type: cmd.type,
+    payload_json: cmd.payload_json ?? cmd.payload ?? null,
+    status: cmd.status,
+    result_json: cmd.result_json ?? cmd.result ?? null,
+    created_at: cmd.created_at,
+    started_at: cmd.started_at,
+    completed_at: cmd.completed_at,
+  }));
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -27,7 +40,7 @@ export default async function JobsPage() {
         description="Command queue — commands are executed by agents on each server"
       />
       <JobList
-        initialCommands={(commands as Command[]) ?? []}
+        initialCommands={commands}
         serverNames={serverNames}
       />
     </div>

@@ -4,8 +4,8 @@ import { Loader2 } from "lucide-react";
 
 export function JobStatusBadge({ status }: { status: CommandStatus }) {
   switch (status) {
-    case "pending":
-      return <Badge variant="secondary">Pending</Badge>;
+    case "queued":
+      return <Badge variant="secondary">Queued</Badge>;
     case "running":
       return (
         <Badge variant="outline" className="gap-1">
@@ -13,10 +13,12 @@ export function JobStatusBadge({ status }: { status: CommandStatus }) {
           Running
         </Badge>
       );
-    case "completed":
-      return <Badge className="bg-green-600 hover:bg-green-600">Completed</Badge>;
+    case "succeeded":
+      return <Badge className="bg-green-600 hover:bg-green-600">Succeeded</Badge>;
     case "failed":
       return <Badge variant="destructive">Failed</Badge>;
+    case "cancelled":
+      return <Badge variant="outline">Cancelled</Badge>;
     default:
       return <Badge variant="outline">{status}</Badge>;
   }

@@ -9,7 +9,7 @@
 ## 2. Technology Stack
 
 ### Frontend (Web Dashboard)
-- **Framework**: Next.js 15 (App Router)
+- **Framework**: Next.js 16 (App Router)
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS v4, shadcn/ui components
 - **Icons**: Lucide React
@@ -53,6 +53,7 @@
 /
 ├── agent/                  # Node.js agent code
 │   ├── src/                # Agent source logic
+│   ├── deploy.sh           # Agent deployment script
 │   └── package.json        # Agent-specific dependencies
 ├── docs/                   # Documentation (PRD, Git workflows)
 ├── src/                    # Next.js Dashboard source
@@ -61,8 +62,13 @@
 │   ├── lib/                # Utilities, Supabase client
 │   └── types/              # Shared TypeScript definitions
 ├── supabase/               # Supabase config and migrations
+├── .gemini/                # Gemini CLI configuration & aliases
 ├── CLAUDE.md               # Context for Claude (Reference)
+├── DEPLOY_AGENT.md         # Agent deployment guide
+├── GEMINI.md               # Project Context (this file)
 ├── IMPLEMENTATION_NOTES.md # Implementation details/Status
+├── QUICK_START.md          # Quick start guide
+├── TROUBLESHOOTING.md      # Troubleshooting guide
 └── package.json            # Root/Dashboard dependencies
 ```
 
@@ -111,7 +117,8 @@ The agent strictly executes only these allowed command types:
 - `server:logs` (tailing)
 - `server:export` (backup)
 - `server:test` (connectivity check)
-- `user:add`, `user:revoke`, `user:update-access`
+- `server:health-check` (deep health inspection)
+- `user:add`, `user:update`, `user:revoke`, `user:update-access`
 
 ## 8. Coding Guidelines
 - **Paths**: Always use absolute paths when reading/writing files.

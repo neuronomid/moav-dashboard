@@ -7,6 +7,9 @@ import path from "path";
 
 // MoaV installation path - adjust if installed elsewhere
 const MOAV_PATH = process.env.MOAV_PATH || "/opt/moav/moav.sh";
+const MOAV_ROOT = process.env.MOAV_ROOT || path.dirname(MOAV_PATH);
+const MOAV_BUNDLE_DIR =
+    process.env.MOAV_BUNDLE_DIR || path.join(MOAV_ROOT, "outputs", "bundles");
 
 // Helper to run moav commands with proper path
 const moav = (args: string) => runCommand(`${MOAV_PATH} ${args}`);
@@ -48,7 +51,7 @@ export const userAdd: CommandHandler = async (payload) => {
     await moav(`user add ${username} --package`);
 
     // Read the generated config bundle
-    const bundlePath = `/opt/moav/outputs/bundles/${username}`;
+    const bundlePath = path.join(MOAV_BUNDLE_DIR, username);
     const configRaw: Record<string, string> = {};
 
     console.log(`[user:add] Looking for config files in: ${bundlePath}`);
